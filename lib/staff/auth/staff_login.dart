@@ -1,0 +1,291 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:hospital_app/theme/app_colors.dart';
+import 'package:hospital_app/theme/app_textstyles.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hospital_app/staff/doctor_select/select_doctor.dart';
+
+class StaffLogin extends StatefulWidget {
+  StaffLogin({super.key});
+
+  @override
+  State<StaffLogin> createState() => _StaffLoginState();
+}
+
+class _StaffLoginState extends State<StaffLogin> {
+  final TextEditingController hospitalController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController pinController = TextEditingController();
+
+  bool isLoading = false;
+  bool hidePin = true;
+
+  bool isValidPin(String pin) {
+    final RegExp pinRegex = RegExp(r'^\d{4}$');
+    return pinRegex.hasMatch(pin);
+  }
+
+  ///  IMPORTANT: same format everywhere
+  String formatHospitalKey(String name) {
+    return name.trim().toLowerCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+
+      body: Stack(
+        children: [
+          Positioned(
+            top: 150,
+            left: 100,
+            right: 0,
+            child: Center(
+              child: Image.asset(
+                'assets/icons/staff.png',
+                width: 132,
+                height: 132,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 240,
+            left: 16,
+            right: 16,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.card_primary,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      'LOGIN',
+                      style: app_textstyles.sectionTitle,
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  TextField(
+                    controller: hospitalController,
+                    decoration: InputDecoration(
+                      labelText: 'Hospital Name',
+                      labelStyle: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 16),
+
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      labelStyle: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 16),
+
+                  TextField(
+                    controller: pinController,
+                    obscureText: hidePin,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: InputDecoration(
+                      labelText: 'Staff PIN',
+                      labelStyle: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 16,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          hidePin
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            hidePin = !hidePin;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ).copyWith(
+                        overlayColor: MaterialStateProperty.all(Colors.transparent),
+                      ),
+
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+
+                          // admin style gradient
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF8BCAFE),
+                              Color(0xFF70AADE),
+                            ],
+                          ),
+
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.25),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(vertical: 14),
+
+                          child: isLoading
+                              ? SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                              : Text(
+                            'Login',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 50),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _login() async {
+    final hospital = hospitalController.text.trim();
+    final name = nameController.text.trim();
+    final pin = pinController.text.trim();
+
+    if (hospital.isEmpty || name.isEmpty || pin.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('সব ফিল্ড পূরণ করতে হবে')),
+      );
+      return;
+    }
+
+    if (!isValidPin(pin)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PIN অবশ্যই ৪ ডিজিট হতে হবে')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final prefs = await SharedPreferences.getInstance();
+
+    ///  FIX: normalized key
+    final hospitalKey = formatHospitalKey(hospital);
+
+    /// correct key
+    final data = prefs.getString('staffs_$hospitalKey');
+
+    /// DEBUG (optional)
+    print("LOGIN KEY: staffs_$hospitalKey");
+
+    if (data == null) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Hospital not found')),
+      );
+      return;
+    }
+
+
+    final staffs = List<Map<String, dynamic>>.from(jsonDecode(data));
+
+    bool isValid = false;
+
+    for (var staff in staffs) {
+      print("DB DATA: $staff");
+
+      if (staff['name'].toString().trim().toLowerCase() ==
+          name.trim().toLowerCase() &&
+          staff['pin'].toString() == pin &&
+          (staff['status'] ?? 'active').toString().toLowerCase() == 'active') {
+
+        isValid = true;
+        break;
+      }
+    }
+
+    setState(() => isLoading = false);
+
+    if (isValid) {
+
+      ///save original hospital name
+      await prefs.setString('currentHospital', hospital);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => SelectDoctor()),
+      );
+
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid Name / PIN')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    pinController.dispose();
+    hospitalController.dispose();
+    super.dispose();
+  }
+}
