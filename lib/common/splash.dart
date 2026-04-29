@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hospital_app/theme/app_colors.dart';
 import 'role_select.dart';
+import 'dart:math';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});
@@ -10,9 +11,7 @@ class Splash extends StatefulWidget {
   State<Splash> createState() => _SplashState();
 }
 
-class _SplashState extends State<Splash>
-    with SingleTickerProviderStateMixin {
-
+class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
 
@@ -25,11 +24,12 @@ class _SplashState extends State<Splash>
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
 
-    _scale = Tween<double>(begin: 1.0, end: 1.06).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 1.06,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => RoleSelect()),
@@ -44,7 +44,7 @@ class _SplashState extends State<Splash>
         width: double.infinity,
         height: double.infinity,
 
-        /// background gradient
+        /// Background Gradient
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -59,64 +59,196 @@ class _SplashState extends State<Splash>
 
         child: Stack(
           children: [
-
-            /// CENTER LOGO (Heart)
+            ///CENTER LOGO + GLASS CIRCLE
             Center(
-              child: ScaleTransition(
-                scale: _scale,
-                child: Image.asset(
-                  'assets/splash/Logo1.png',
-                  width: 150,
-                ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  /// MAIN CIRCLE
+                  Container(
+                    width: 260,
+                    height: 260,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withOpacity(0.6), // strong light
+                          Colors.white.withOpacity(0.1), // middle soft
+                          Colors.transparent, // fade out
+                        ],
+                        stops: [0.0, 0.5, 0.9],
+                      ),
+                      border: Border.all(
+                        color: AppColors.splashMiddle.withOpacity(0.2),
+                        width: 4,
+                      ),
+                    ),
+                  ),
+
+                  /// LOGO
+                  ScaleTransition(
+                    scale: _scale,
+                    child: Image.asset('assets/splash/logo3.png', width: 150),
+                  ),
+                ],
               ),
             ),
 
-            /// SHIELD TOP LEFT
+            ///  SHIELD
             Positioned(
-              top: 180,
+              top: 300,
               left: 80,
               child: Opacity(
                 opacity: 0.6,
-                child: Image.asset(
-                  'assets/splash/shield.png',
-                  width: 40,
-                ),
+                child: Image.asset('assets/splash/shield.png', width: 50),
               ),
             ),
 
-            /// SMALL STAR EFFECT
             Positioned(
-              top: 200,
-              left: 110,
-              child: Icon(Icons.star,
-                  color: Colors.white.withOpacity(0.4), size: 14),
+              top: 315,
+              left: 95,
+              child: Opacity(
+                opacity: 0.1,
+                child: Image.asset('assets/icons/plus.png', width: 20),
+              ),
             ),
 
-            /// MEDICINE IMAGE (BOTTOM LEFT)
             Positioned(
-              bottom: 120,
+              top: 300,
+              left: 80,
+              child: Opacity(
+                opacity: 0.6,
+                child: Image.asset('assets/splash/shield.png', width: 50),
+              ),
+            ),
+
+            /// MEDICINE (BOTTOM LEFT)
+            Positioned(
+              bottom: 250,
               left: 40,
               child: Opacity(
                 opacity: 0.9,
-                child: Image.asset(
-                  'assets/splash/medicine.png',
-                  width: 140,
-                ),
+                child: Image.asset('assets/splash/medicine.png', width: 120),
               ),
             ),
 
-            /// SPARKLES RIGHT SIDE
+            ///Stars
             Positioned(
-              bottom: 200,
-              right: 50,
-              child: Column(
-                children: [
-                  Icon(Icons.star,
-                      color: Colors.white.withOpacity(0.4), size: 10),
-                  SizedBox(height: 10),
-                  Icon(Icons.star,
-                      color: Colors.white.withOpacity(0.3), size: 14),
-                ],
+              bottom: 270,
+              left: 160,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 10),
+              ),
+            ),
+
+            Positioned(
+              top: 260,
+              left: 150,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 25),
+              ),
+            ),
+
+            Positioned(
+              top: 300,
+              right: 120,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 25),
+              ),
+            ),
+
+            Positioned(
+              bottom: 280,
+              right: 150,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 30),
+              ),
+            ),
+
+            Positioned(
+              bottom: 300,
+              right: 100,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 20),
+              ),
+            ),
+
+            Positioned(
+              bottom: 380,
+              right: 100,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 20),
+              ),
+            ),
+            Positioned(
+              bottom: 460,
+              right: 60,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 20),
+              ),
+            ),
+
+            Positioned(
+              bottom: 260,
+              right: 60,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 15),
+              ),
+            ),
+
+            Positioned(
+              bottom: 260,
+              left: 60,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 15),
+              ),
+            ),
+
+            Positioned(
+              bottom: 300,
+              left: 40,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 25),
+              ),
+            ),
+
+            Positioned(
+              bottom: 370,
+              left: 60,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset('assets/splash/sparkler.png', width: 25),
+              ),
+            ),
+            Positioned(
+              bottom: 440,
+              left: 80,
+              child: Opacity(
+                opacity: 0.3,
+                child: Image.asset('assets/splash/sparkler.png', width: 25),
+              ),
+            ),
+
+            ///Injection
+            Positioned(
+              top: 320,
+              right: 80,
+              child: Opacity(
+                opacity: 0.3,
+                child: Image.asset('assets/splash/injection.png', width: 50),
               ),
             ),
           ],
