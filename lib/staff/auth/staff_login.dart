@@ -5,6 +5,7 @@ import 'package:hospital_app/theme/app_colors.dart';
 import 'package:hospital_app/theme/app_textstyles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hospital_app/staff/doctor_select/select_doctor.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class StaffLogin extends StatefulWidget {
   StaffLogin({super.key});
@@ -227,60 +228,58 @@ class _StaffLoginState extends State<StaffLogin> {
 
     final prefs = await SharedPreferences.getInstance();
 
-    ///  FIX: normalized key
     final hospitalKey = formatHospitalKey(hospital);
 
-    /// correct key
-    final data = prefs.getString('staffs_$hospitalKey');
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('hospitals')
+          .doc(hospitalKey)
+          .collection('staffs')
+          .get();
 
-    /// DEBUG (optional)
-    print("LOGIN KEY: staffs_$hospitalKey");
+      if (snapshot.docs.isEmpty) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Hospital not found')),
+        );
+        return;
+      }
 
-    if (data == null) {
+      bool isValid = snapshot.docs.any((doc) {
+        final staff = doc.data();
+
+
+        return staff['name'].toString().trim().toLowerCase() ==
+            name.toLowerCase() &&
+            staff['pin'].toString() == pin &&
+            (staff['status'] ?? 'active')
+                .toString()
+                .toLowerCase() ==
+                'active';
+      });
+
+      setState(() => isLoading = false);
+
+      if (isValid) {
+        ///use hospitalKey (not original)
+        await prefs.setString('currentHospital', hospitalKey);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => SelectDoctor()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid Name / PIN')),
+        );
+      }
+    } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hospital not found')),
-      );
-      return;
-    }
-
-
-    final staffs = List<Map<String, dynamic>>.from(jsonDecode(data));
-
-    bool isValid = false;
-
-    for (var staff in staffs) {
-      print("DB DATA: $staff");
-
-      if (staff['name'].toString().trim().toLowerCase() ==
-          name.trim().toLowerCase() &&
-          staff['pin'].toString() == pin &&
-          (staff['status'] ?? 'active').toString().toLowerCase() == 'active') {
-
-        isValid = true;
-        break;
-      }
-    }
-
-    setState(() => isLoading = false);
-
-    if (isValid) {
-
-      ///save original hospital name
-      await prefs.setString('currentHospital', hospital);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => SelectDoctor()),
-      );
-
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid Name / PIN')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
-
   @override
   void dispose() {
     nameController.dispose();

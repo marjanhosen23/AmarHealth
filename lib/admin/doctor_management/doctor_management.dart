@@ -31,37 +31,26 @@ class _DoctorManagementState extends State<DoctorManagement> {
   }
 
   void loadDoctors() async {
-    final prefs = await SharedPreferences.getInstance();
-
     final hospitalKey = hospitalId.trim().toLowerCase();
 
-    final data = prefs.getString('doctors_$hospitalKey');
+    final snapshot = await FirebaseFirestore.instance
+        .collection('hospitals')
+        .doc(hospitalKey)
+        .collection('doctors')
+        .get();
 
-    if (data != null) {
-      setState(() {
-        doctors = List<Map<String, dynamic>>.from(jsonDecode(data));
-      });
-    }
+    final data = snapshot.docs.map((doc) {
+      final d = Map<String, dynamic>.from(doc.data());
+      d['id'] = doc.id;
+      return d;
+    }).toList();
+
+    setState(() {
+      doctors = data;
+    });
   }
 
-  void saveDoctors() async {
-    final prefs = await SharedPreferences.getInstance();
 
-    final hospitalKey = hospitalId.trim().toLowerCase();
-
-    prefs.setString(
-      'doctors_$hospitalKey',
-      jsonEncode(doctors),
-    );
-    for (var doc in doctors) {
-      await FirebaseFirestore.instance
-          .collection('hospitals')
-          .doc(hospitalKey)
-          .collection('doctors')
-          .doc(doc['name'])
-          .set(doc);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,10 +73,19 @@ class _DoctorManagementState extends State<DoctorManagement> {
               );
 
               if (newDoctor != null) {
+                final hospitalKey = hospitalId.trim().toLowerCase();
+
+                final ref = await FirebaseFirestore.instance
+                    .collection('hospitals')
+                    .doc(hospitalKey)
+                    .collection('doctors')
+                    .add(newDoctor);
+
+                newDoctor['id'] = ref.id;
+
                 setState(() {
                   doctors.add(newDoctor);
                 });
-                saveDoctors();
               }
             },
 
@@ -140,54 +138,62 @@ class _DoctorManagementState extends State<DoctorManagement> {
                   dept: doctors[index]['dept'] ?? '',
                   time: doctors[index]['time'] ?? '',
 
-                  onEdit: () async {
-                    final updated = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AddDoctor(
-                          name: doctors[index]['name'],
-                          dept: doctors[index]['dept'],
-                          time: doctors[index]['time'],
+                    onEdit: () async {
+                      final updated = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddDoctor(
+                            name: doctors[index]['name'],
+                            dept: doctors[index]['dept'],
+                            time: doctors[index]['time'],
+                          ),
                         ),
-                      ),
-                    );
+                      );
 
-                    if (updated != null) {
-                      setState(() {
-                        doctors[index] = updated;
-                      });
-                      saveDoctors();
-                    }
-                  },
+                      if (updated != null) {
+                        final hospitalKey = hospitalId.trim().toLowerCase();
+                        final docId = doctors[index]['id'];
+
+                        await FirebaseFirestore.instance
+                            .collection('hospitals')
+                            .doc(hospitalKey)
+                            .collection('doctors')
+                            .doc(docId)
+                            .update(updated);
+
+                        updated['id'] = docId;
+
+                        setState(() {
+                          doctors[index] = updated;
+                        });
+                      }
+                    },
 
                   onDelete: () async {
                     final hospitalKey = hospitalId.trim().toLowerCase();
-                    final doctorName = doctors[index]['name'];
+                    final docId = doctors[index]['id'];
 
                     try {
-                      /// delete from doctors collection
+                      ///delete from doctors
                       await FirebaseFirestore.instance
                           .collection('hospitals')
                           .doc(hospitalKey)
                           .collection('doctors')
-                          .doc(doctorName)
+                          .doc(docId)
                           .delete();
 
-                      /// delete from today_settings
+                      ///delete from today_settings (same docId use করো)
                       await FirebaseFirestore.instance
                           .collection('hospitals')
                           .doc(hospitalKey)
                           .collection('today_settings')
-                          .doc(doctorName)
+                          .doc(docId)
                           .delete();
 
-                      ///remove from UI
+                      /// UI update
                       setState(() {
                         doctors.removeAt(index);
                       });
-
-                      /// update local (optional)
-                      saveDoctors();
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Doctor deleted successfully")),
@@ -205,6 +211,7 @@ class _DoctorManagementState extends State<DoctorManagement> {
           ),
         ],
       ),
+
     );
   }
 }

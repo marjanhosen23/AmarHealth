@@ -233,68 +233,60 @@ class _AdminLoginState extends State<AdminLogin> {
     final enteredHospital = hospitalController.text.trim();
     final enteredPin = pinController.text.trim();
 
-    final prefs = await SharedPreferences.getInstance();
-
-    /// multiple hospital list
-    final data = prefs.getString('hospitals');
-
-    if (data == null) {
+    if (enteredHospital.isEmpty || enteredPin.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No hospital found. Please signup first')),
+        const SnackBar(content: Text('All fields are required')),
       );
       return;
     }
 
-    List hospitals = jsonDecode(data);
+    setState(() => isLoading = true);
 
-    /// find matching hospital
-    final found = hospitals.firstWhere(
-      (h) =>
-          h['name'].toLowerCase() == enteredHospital.toLowerCase() &&
-          h['pin'] == enteredPin,
-      orElse: () => null,
-    );
+    final hospitalKey = enteredHospital.toLowerCase();
 
-    if (found == null) {
-      final hospitalKey = enteredHospital.trim().toLowerCase();
-
+    try {
       final snapshot = await FirebaseFirestore.instance
           .collection('hospitals')
           .doc(hospitalKey)
           .get();
 
-      if (snapshot.exists) {
-        final data = snapshot.data();
-
-        if (data != null && data['pin'] == enteredPin) {
-          /// save locally (same as before)
-          await prefs.setString('currentHospital', data['name']);
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AdminDashboard(hospitalName: data['name']),
-            ),
-          );
-          return;
-        }
+      if (!snapshot.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Hospital not found')),
+        );
+        setState(() => isLoading = false);
+        return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid login credentials')),
+      final data = snapshot.data();
+
+      if (data == null || data['pin'] != enteredPin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid PIN')),
+        );
+        setState(() => isLoading = false);
+        return;
+      }
+
+      /// save current hospital
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('currentHospital', hospitalKey);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AdminDashboard(
+            hospitalName: data['name'],
+          ),
+        ),
       );
-      return;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
 
-    ///  save current hospital
-    await prefs.setString('currentHospital', found['name']);
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AdminDashboard(hospitalName: found['name']),
-      ),
-    );
+    setState(() => isLoading = false);
   }
 
   @override

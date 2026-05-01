@@ -33,40 +33,26 @@ class _StaffManagementState extends State<StaffManagement> {
 
   //  Load staff per hospital
   void loadStaffs() async {
-    final prefs = await SharedPreferences.getInstance();
     final hospitalKey = hospitalId.trim().toLowerCase();
-    final data = prefs.getString('staffs_$hospitalKey');
 
-    if (data != null) {
-      setState(() {
-        staffs = List<Map<String, dynamic>>.from(jsonDecode(data));
-      });
-    } else {
-      setState(() {
-        staffs = [];
-      });
-    }
+    final snapshot = await FirebaseFirestore.instance
+        .collection('hospitals')
+        .doc(hospitalKey)
+        .collection('staffs')
+        .get();
+
+    final data = snapshot.docs.map((doc) {
+      final d = Map<String, dynamic>.from(doc.data());
+      d['id'] = doc.id;
+      return d;
+    }).toList();
+
+    setState(() {
+      staffs = data;
+    });
   }
 
   // Save staff per hospital
-  void saveStaffs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hospitalKey = hospitalId.trim().toLowerCase();
-
-    await prefs.setString(
-      'staffs_$hospitalKey',
-      jsonEncode(staffs),
-    );
-    for (var staff in staffs) {
-      await FirebaseFirestore.instance
-          .collection('hospitals')
-          .doc(hospitalKey)
-          .collection('staffs')
-          .doc(staff['name']) // unique id
-          .set(staff);
-    }
-
-    }
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +60,7 @@ class _StaffManagementState extends State<StaffManagement> {
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Staff Management"),
-
-          ],
+          children: [const Text("Staff Management")],
         ),
       ),
       body: Column(
@@ -91,10 +74,19 @@ class _StaffManagementState extends State<StaffManagement> {
               );
 
               if (newStaff != null) {
+                final hospitalKey = hospitalId.trim().toLowerCase();
+
+                final ref = await FirebaseFirestore.instance
+                    .collection('hospitals')
+                    .doc(hospitalKey)
+                    .collection('staffs')
+                    .add(newStaff);
+
+                newStaff['id'] = ref.id;
+
                 setState(() {
                   staffs.add(newStaff);
                 });
-                saveStaffs();
               }
             },
             child: Padding(
@@ -106,10 +98,7 @@ class _StaffManagementState extends State<StaffManagement> {
                   borderRadius: BorderRadius.circular(14),
 
                   gradient: LinearGradient(
-                    colors: [
-                      Color(0xFF8BCAFE),
-                      Color(0xFF70AADE),
-                    ],
+                    colors: [Color(0xFF8BCAFE), Color(0xFF70AADE)],
                   ),
 
                   boxShadow: [
@@ -123,10 +112,9 @@ class _StaffManagementState extends State<StaffManagement> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset("assets/icons/plus.png",width: 18,),
+                    Image.asset("assets/icons/plus.png", width: 18),
                     const SizedBox(width: 8),
-                    Text('Add New Staff',
-                        style: app_textstyles.appBarTitle),
+                    Text('Add New Staff', style: app_textstyles.appBarTitle),
                   ],
                 ),
               ),
@@ -138,50 +126,78 @@ class _StaffManagementState extends State<StaffManagement> {
             child: staffs.isEmpty
                 ? const Center(child: Text("No staff found"))
                 : ListView.builder(
-              itemCount: staffs.length,
-              itemBuilder: (context, index) {
-                return StaffCard(
-                  name: staffs[index]['name'] ?? '',
-                  role: staffs[index]['role'] ?? '',
-                  pin: staffs[index]['pin'] ?? '',
-                  status: staffs[index]['status'] ?? 'Active',
+                    itemCount: staffs.length,
+                    itemBuilder: (context, index) {
+                      return StaffCard(
+                        name: staffs[index]['name'] ?? '',
+                        role: staffs[index]['role'] ?? '',
+                        pin: staffs[index]['pin'] ?? '',
+                        status: staffs[index]['status'] ?? 'Active',
 
-                  onRemove: () {
-                    setState(() {
-                      staffs.removeAt(index);
-                    });
-                    saveStaffs();
-                  },
+                        onRemove: () async {
+                          final hospitalKey = hospitalId.trim().toLowerCase();
+                          final docId = staffs[index]['id'];
 
-                  onChangePin: () async {
-                    final newPin = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ChangePin(oldPin: staffs[index]['pin']),
-                      ),
-                    );
+                          await FirebaseFirestore.instance
+                              .collection('hospitals')
+                              .doc(hospitalKey)
+                              .collection('staffs')
+                              .doc(docId)
+                              .delete();
 
-                    if (newPin != null) {
-                      setState(() {
-                        staffs[index]['pin'] = newPin;
-                      });
-                      saveStaffs();
-                    }
-                  },
+                          setState(() {
+                            staffs.removeAt(index);
+                          });
+                        },
 
-                  onToggleStatus: () {
-                    setState(() {
-                      staffs[index]['status'] =
-                      staffs[index]['status'] == 'Active'
-                          ? 'Inactive'
-                          : 'Active';
-                    });
-                    saveStaffs();
-                  },
-                );
-              },
-            ),
+                        onChangePin: () async {
+                          final newPin = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ChangePin(oldPin: staffs[index]['pin']),
+                            ),
+                          );
+
+                          if (newPin != null) {
+                            final hospitalKey = hospitalId.trim().toLowerCase();
+                            final docId = staffs[index]['id'];
+
+                            await FirebaseFirestore.instance
+                                .collection('hospitals')
+                                .doc(hospitalKey)
+                                .collection('staffs')
+                                .doc(docId)
+                                .update({'pin': newPin});
+
+                            setState(() {
+                              staffs[index]['pin'] = newPin;
+                            });
+                          }
+                        },
+
+                        onToggleStatus: () async {
+                          final hospitalKey = hospitalId.trim().toLowerCase();
+                          final docId = staffs[index]['id'];
+
+                          final newStatus = staffs[index]['status'] == 'Active'
+                              ? 'Inactive'
+                              : 'Active';
+
+                          await FirebaseFirestore.instance
+                              .collection('hospitals')
+                              .doc(hospitalKey)
+                              .collection('staffs')
+                              .doc(docId)
+                              .update({'status': newStatus});
+
+                          setState(() {
+                            staffs[index]['status'] = newStatus;
+                          });
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -235,9 +251,7 @@ class _StaffCardState extends State<StaffCard> {
         ),
 
         //  border
-        border: Border.all(
-          color: Colors.white.withOpacity(0.5),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.5)),
 
         //  shadow
         boxShadow: [
@@ -256,9 +270,13 @@ class _StaffCardState extends State<StaffCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.name,
-              style: app_textstyles.body.copyWith(
-                  fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            widget.name,
+            style: app_textstyles.body.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
 
           const SizedBox(height: 5),
 
@@ -270,14 +288,13 @@ class _StaffCardState extends State<StaffCard> {
             children: [
               Text('PIN: ${showPin ? widget.pin : "****"}'),
               IconButton(
-                icon: Icon(
-                    showPin ? Icons.visibility_off : Icons.visibility),
+                icon: Icon(showPin ? Icons.visibility_off : Icons.visibility),
                 onPressed: () {
                   setState(() {
                     showPin = !showPin;
                   });
                 },
-              )
+              ),
             ],
           ),
 
@@ -292,28 +309,26 @@ class _StaffCardState extends State<StaffCard> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: widget.onChangePin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    elevation: 0,
+                  style:
+                      ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
 
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ).copyWith(
-                    overlayColor: MaterialStateProperty.all(
-                      Colors.transparent,
-                    ),
-                  ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ).copyWith(
+                        overlayColor: MaterialStateProperty.all(
+                          Colors.transparent,
+                        ),
+                      ),
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF8BCAFE),
-                          Color(0xFF70AADE),
-                        ],
+                        colors: [Color(0xFF8BCAFE), Color(0xFF70AADE)],
                       ),
                     ),
                     child: const Center(
@@ -330,19 +345,20 @@ class _StaffCardState extends State<StaffCard> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: widget.onToggleStatus,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    elevation: 0,
+                  style:
+                      ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
 
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ).copyWith(
-                    overlayColor: MaterialStateProperty.all(
-                      Colors.transparent,
-                    ),
-                  ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ).copyWith(
+                        overlayColor: MaterialStateProperty.all(
+                          Colors.transparent,
+                        ),
+                      ),
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
@@ -356,9 +372,7 @@ class _StaffCardState extends State<StaffCard> {
                     ),
                     child: Center(
                       child: Text(
-                        widget.status == "Active"
-                            ? "Deactivate"
-                            : "Activate",
+                        widget.status == "Active" ? "Deactivate" : "Activate",
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -370,19 +384,20 @@ class _StaffCardState extends State<StaffCard> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: widget.onRemove,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    elevation: 0,
+                  style:
+                      ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
 
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ).copyWith(
-                    overlayColor: MaterialStateProperty.all(
-                      Colors.transparent,
-                    ),
-                  ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ).copyWith(
+                        overlayColor: MaterialStateProperty.all(
+                          Colors.transparent,
+                        ),
+                      ),
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
@@ -390,10 +405,7 @@ class _StaffCardState extends State<StaffCard> {
 
                       // red gradient
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.redAccent,
-                          Colors.red,
-                        ],
+                        colors: [Colors.redAccent, Colors.red],
                       ),
 
                       boxShadow: [
@@ -417,7 +429,7 @@ class _StaffCardState extends State<StaffCard> {
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );
