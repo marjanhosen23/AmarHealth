@@ -6,6 +6,7 @@ import 'package:hospital_app/theme/app_textstyles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hospital_app/staff/staff_panel/staff_panel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hospital_app/common/settings.dart';
 
 class SelectDoctor extends StatefulWidget {
   const SelectDoctor({super.key});
@@ -106,8 +107,8 @@ class _SelectDoctorState extends State<SelectDoctor> {
         title:  Text("Select Doctor"),
 
         actions: [
-          GestureDetector(
-            onTap: () {
+          IconButton(
+            onPressed: () {
               showMenu(
                 context: context,
                 position: const RelativeRect.fromLTRB(100, 80, 16, 0),
@@ -116,18 +117,9 @@ class _SelectDoctorState extends State<SelectDoctor> {
                     value: 'settings',
                     child: Row(
                       children: [
-                        Image.asset(
-                          'assets/icons/settings.png',
-                          width: 25,
-                          height: 25,
-                        ),
+                        Image.asset('assets/icons/settings.png', width: 25),
                         const SizedBox(width: 10),
-                        Text(
-                          'Settings',
-                          style: app_textstyles.body.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Text('Settings'),
                       ],
                     ),
                   ),
@@ -135,42 +127,23 @@ class _SelectDoctorState extends State<SelectDoctor> {
                     value: 'logout',
                     child: Row(
                       children: [
-                        Image.asset(
-                          'assets/icons/turn_off.png',
-                          width: 25,
-                          height: 25,
-                        ),
-                        const SizedBox(width: 10.0),
-                        Text(
-                          'Logout',
-                          style: app_textstyles.body.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Image.asset('assets/icons/turn_off.png', width: 25),
+                        const SizedBox(width: 10),
+                        Text('Logout'),
                       ],
                     ),
                   ),
                 ],
-                color: AppColors.card_primary,
               ).then((value) {
                 if (value == 'logout') {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => LogoutConfirm(),
-                    ),
+                    MaterialPageRoute(builder: (_) => LogoutConfirm()),
                   );
                 }
               });
             },
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Image.asset(
-                'assets/icons/menu.png',
-                width: 45,
-                height: 45,
-              ),
-            ),
+            icon: Image.asset('assets/icons/menu.png'),
           ),
         ],
       ),

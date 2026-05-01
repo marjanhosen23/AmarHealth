@@ -4,6 +4,7 @@ import 'package:hospital_app/admin/doctor_management/doctor_management.dart';
 import 'package:hospital_app/admin/staff_management/staff_Management.dart';
 import 'package:hospital_app/admin/today_setting/todays_settings.dart';
 import 'package:hospital_app/common/logout_confirm.dart';
+import 'package:hospital_app/common/settings.dart';
 import 'package:hospital_app/theme/app_colors.dart';
 import 'package:hospital_app/theme/app_textstyles.dart';
 
@@ -82,8 +83,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 if (value == 'logout') {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => LogoutConfirm(),
+                    MaterialPageRoute(builder: (_) => LogoutConfirm()),
+                  );
+                }
+                else if (value == 'settings') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => Settings(),
                     ),
                   );
                 }
