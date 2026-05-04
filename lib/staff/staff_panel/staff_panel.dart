@@ -140,10 +140,12 @@ class _StaffPanelState extends State<StaffPanel> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: Colors.grey[200],
 
       appBar: AppBar(
-        title: const Text("Staff Panel"),
+        title: Text("Staff Panel",style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),),
         backgroundColor: Theme.of(context).primaryColor,
       ),
 
@@ -233,7 +235,7 @@ class _StaffPanelState extends State<StaffPanel> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor:AppColors.primary,
-                      foregroundColor: Colors.black,
+                      foregroundColor: Colors.white,
                     ),
                     child: Text("Next"),
                   ),

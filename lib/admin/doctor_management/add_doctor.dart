@@ -53,6 +53,7 @@ class _AddDoctorState extends State<AddDoctor> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
           'Add Doctor',
           style: app_textstyles.appBarTitle.copyWith(color: Colors.white),
@@ -69,18 +70,24 @@ class _AddDoctorState extends State<AddDoctor> {
               Text('Doctor Name'),
               TextField(
                 controller: nameCtrl,
+
                 decoration: InputDecoration(
+                  hintText: "Enter Doctor Name",
+                  hintStyle: TextStyle(
+                    color: AppColors.hint_text,
+                    fontSize: 16,
+                  ),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.7),
 
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Color(0xFF8BCAFE)),
+                    borderSide: BorderSide(color: AppColors.inputNormal_border,),
                   ),
 
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Color(0xFF70AADE), width: 2),
+                    borderSide: BorderSide(color: AppColors.inputNormal_border, width: 2),
                   ),
                 ),
               ),
@@ -119,7 +126,7 @@ class _AddDoctorState extends State<AddDoctor> {
 
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Color(0xFF8BCAFE)),
+                      borderSide: BorderSide(color: AppColors.inputNormal_border,),
                     ),
                   ),
                 ),
@@ -129,7 +136,37 @@ class _AddDoctorState extends State<AddDoctor> {
 
               /// Time
               Text('Avg Time'),
-              TextField(controller: timeCtrl),
+
+              TextField(
+                controller: timeCtrl,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.7),
+
+                  hintText: "Enter time",
+                  hintStyle: TextStyle(
+                    color: AppColors.hint_text,
+                    fontSize: 16,
+                  ),
+
+                  /// normal border
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.inputNormal_border,
+                    ),
+                  ),
+
+                  /// focus border
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.inputfocas_border,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
 
               const SizedBox(height: 30),
 

@@ -30,7 +30,11 @@ class _SerialInputState extends State<SerialInput> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Serial"),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text("Serial",style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold
+        ),),
       ),
 
       body: Center(

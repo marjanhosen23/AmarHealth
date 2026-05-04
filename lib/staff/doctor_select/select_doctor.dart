@@ -104,7 +104,10 @@ class _SelectDoctorState extends State<SelectDoctor> {
     return Scaffold(
 
       appBar: AppBar(
-        title:  Text("Select Doctor"),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title:  Text("Select Doctor",style: TextStyle(
+          color: Colors.white,
+        ),),
 
         actions: [
           IconButton(
@@ -113,16 +116,6 @@ class _SelectDoctorState extends State<SelectDoctor> {
                 context: context,
                 position: const RelativeRect.fromLTRB(100, 80, 16, 0),
                 items: [
-                  PopupMenuItem(
-                    value: 'settings',
-                    child: Row(
-                      children: [
-                        Image.asset('assets/icons/settings.png', width: 25),
-                        const SizedBox(width: 10),
-                        Text('Settings'),
-                      ],
-                    ),
-                  ),
                   PopupMenuItem(
                     value: 'logout',
                     child: Row(
@@ -157,11 +150,45 @@ class _SelectDoctorState extends State<SelectDoctor> {
             /// SEARCH
             TextField(
               controller: searchCtrl,
-              decoration: const InputDecoration(
-                hintText: "Search doctor",
-                prefixIcon: Icon(Icons.search),
-              ),
               onChanged: (_) => setState(() {}),
+
+              decoration: InputDecoration(
+                hintText: "Search doctor",
+                hintStyle: TextStyle(
+                  color: AppColors.hint_text,
+                  fontSize: 16,
+                ),
+
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: AppColors.primary,
+                ),
+
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.7),
+
+                /// NORMAL BORDER (black remove)
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.inputNormal_border,
+                  ),
+                ),
+
+                /// FOCUS BORDER
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.inputfocas_border,
+                    width: 2,
+                  ),
+                ),
+
+                /// DEFAULT BORDER OVERRIDE
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -207,7 +234,7 @@ class _SelectDoctorState extends State<SelectDoctor> {
                         ],
                         border: Border.all(
                           color: isSelected
-                              ? Colors.blue
+                              ? AppColors.inputfocas_border
                               : Colors.transparent,
                           width: 2,
                         ),

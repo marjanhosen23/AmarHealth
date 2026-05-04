@@ -26,9 +26,9 @@ class _RoleSelectState extends State<RoleSelect> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppColors.splashTop,
-                AppColors.splashMiddle,
-                AppColors.splashBottom,
+                Theme.of(context).scaffoldBackgroundColor,
+                Theme.of(context).scaffoldBackgroundColor,
+                Theme.of(context).scaffoldBackgroundColor,
               ],
             ),
             boxShadow: [
@@ -62,8 +62,8 @@ class _RoleSelectState extends State<RoleSelect> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.card_primary.withOpacity(0.8),
-                      AppColors.card_primary.withOpacity(0.6),
+                      Theme.of(context).cardColor.withOpacity(1.0),
+                      AppColors.card_primary.withOpacity(1.0),
                     ],
                   ),
                   border: Border.all(
@@ -71,12 +71,12 @@ class _RoleSelectState extends State<RoleSelect> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
+                      color: Theme.of(context).shadowColor.withOpacity(0.25),
                       blurRadius: 10,
                       offset: Offset(0, 6),
                     ),
                     BoxShadow(
-                      color: Colors.white.withOpacity(0.6),
+                      color:Theme.of(context).cardColor.withOpacity(0.6),
                       blurRadius: 6,
                       offset: Offset(-2, -2),
                     ),
@@ -141,7 +141,7 @@ class _RoleSelectState extends State<RoleSelect> {
 
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
+                                color: Theme.of(context).shadowColor.withOpacity(0.25),
                                 blurRadius: 8,
                                 offset: Offset(0, 4),
                               ),
@@ -193,8 +193,8 @@ class _RoleSelectState extends State<RoleSelect> {
 
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.6),
-              Colors.white.withOpacity(0.2),
+              Theme.of(context).cardColor.withOpacity(0.6),
+              Theme.of(context).cardColor.withOpacity(0.2)
             ],
           ),
 
@@ -207,7 +207,7 @@ class _RoleSelectState extends State<RoleSelect> {
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Theme.of(context).shadowColor.withOpacity(0.25),
               blurRadius: 10,
               offset: Offset(0, 6),
             ),

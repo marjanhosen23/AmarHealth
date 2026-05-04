@@ -32,13 +32,12 @@ class _HospitalListState extends State<HospitalList> {
         .collection('hospitals')
         .get();
 
-    if (snapshot.docs.isNotEmpty) {
-      hospitals = snapshot.docs.map((doc) {
-        return (doc.data()['name'] ?? '').toString();
-      }).toList();
-    } else {
-      hospitals = [];
-    }
+    hospitals = snapshot.docs.where((doc) {
+      final data = doc.data();
+      return (data['deleted'] ?? false) != true;
+    }).map((doc) {
+      return (doc.data()['name'] ?? '').toString();
+    }).toList();
 
     filteredHospitals = hospitals;
     setState(() {});
@@ -58,6 +57,7 @@ class _HospitalListState extends State<HospitalList> {
     return Scaffold(
 
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
           "হাসপাতাল নির্বাচন",
           style: app_textstyles.appBarTitle.copyWith(color: Colors.white),
@@ -80,6 +80,10 @@ class _HospitalListState extends State<HospitalList> {
               controller: searchCtrl,
               decoration: InputDecoration(
                 hintText: "হাসপাতাল খুঁজুন",
+                hintStyle: TextStyle(
+                  color: AppColors.hint_text
+
+                ),
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: AppColors.card_primary,
@@ -95,7 +99,9 @@ class _HospitalListState extends State<HospitalList> {
 
             Text(
               "হাসপাতালের তালিকা",
-              style: app_textstyles.sectionTitle.copyWith(fontSize: 16),
+              style: app_textstyles.body.copyWith(fontSize: 16,
+                fontWeight: FontWeight.w600
+              ),
             ),
 
             const SizedBox(height: 10),

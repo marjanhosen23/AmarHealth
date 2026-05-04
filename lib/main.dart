@@ -1,6 +1,3 @@
-/*marjan hosen Oni
-Daffodil international University
-*/
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 import 'common/splash.dart';
@@ -16,6 +13,7 @@ void main() async {
 
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -25,7 +23,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       theme: AppTheme.light(),
-      home:Splash(),
+
+      home: Splash(),
     );
   }
 }

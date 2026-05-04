@@ -85,6 +85,31 @@ class _StaffLoginState extends State<StaffLogin> {
                         color: AppColors.primary,
                         fontSize: 16,
                       ),
+
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.7),
+
+                      /// NORMAL BORDER
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.inputNormal_border,
+                        ),
+                      ),
+
+                      /// FOCUS BORDER
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.inputfocas_border,
+                          width: 2,
+                        ),
+                      ),
+
+                      /// REMOVE DEFAULT BLACK
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
 
@@ -98,6 +123,31 @@ class _StaffLoginState extends State<StaffLogin> {
                         color: AppColors.primary,
                         fontSize: 16,
                       ),
+
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.7),
+
+                      /// NORMAL BORDER
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.inputNormal_border,
+                        ),
+                      ),
+
+                      /// FOCUS BORDER
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.inputfocas_border,
+                          width: 2,
+                        ),
+                      ),
+
+                      /// REMOVE DEFAULT BLACK
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
 
@@ -110,17 +160,43 @@ class _StaffLoginState extends State<StaffLogin> {
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                     ],
+
                     decoration: InputDecoration(
                       labelText: 'Staff PIN',
                       labelStyle: TextStyle(
                         color: AppColors.primary,
                         fontSize: 16,
                       ),
+
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.7),
+
+                      /// NORMAL BORDER (black remove)
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.inputNormal_border,
+                        ),
+                      ),
+
+                      /// FOCUS BORDER
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.inputfocas_border,
+                          width: 2,
+                        ),
+                      ),
+
+                      ///DEFAULT BORDER OVERRIDE
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+
                       suffixIcon: IconButton(
                         icon: Icon(
-                          hidePin
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                          hidePin ? Icons.visibility_off : Icons.visibility,
+                          color: AppColors.primary,
                         ),
                         onPressed: () {
                           setState(() {
@@ -135,59 +211,38 @@ class _StaffLoginState extends State<StaffLogin> {
 
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ).copyWith(
-                        overlayColor: MaterialStateProperty.all(Colors.transparent),
-                      ),
-
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-
-                          // admin style gradient
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF8BCAFE),
-                              Color(0xFF70AADE),
-                            ],
-                          ),
-
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
-                              blurRadius: 8,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: isLoading ? null : _login,
                         child: Container(
-                          alignment: Alignment.center,
                           padding: EdgeInsets.symmetric(vertical: 14),
-
-                          child: isLoading
-                              ? SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF8BCAFE),
+                                Color(0xFF70AADE),
+                              ],
                             ),
-                          )
-                              : Text(
-                            'Login',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                          ),
+                          child: Center(
+                            child: isLoading
+                                ? SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                                : Text(
+                              "Login",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),

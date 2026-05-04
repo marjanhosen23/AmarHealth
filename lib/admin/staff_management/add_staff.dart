@@ -44,6 +44,7 @@ class _AddStaffState extends State<AddStaff> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -73,7 +74,7 @@ class _AddStaffState extends State<AddStaff> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: Color(0xFF8BCAFE),
+                    color: AppColors.inputNormal_border,
                   ),
                 ),
 
@@ -124,7 +125,7 @@ class _AddStaffState extends State<AddStaff> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: Color(0xFF8BCAFE),
+                      color: AppColors.inputNormal_border,
                     ),
                   ),
                 ),
@@ -138,10 +139,33 @@ class _AddStaffState extends State<AddStaff> {
               controller: pinCtrl,
               keyboardType: TextInputType.number,
               maxLength: 4,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 counterText: '',
                 hintText: 'Enter PIN',
-                hintStyle: TextStyle(color: AppColors.hint_text,fontSize: 16),
+                hintStyle: TextStyle(
+                  color: AppColors.hint_text,
+                  fontSize: 16,
+                ),
+
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.7),
+
+                /// NORMAL BORDER (black → replace)
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.inputNormal_border,
+                  ),
+                ),
+
+                ///FOCUS BORDER
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.inputfocas_border,
+                    width: 2,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 30),
@@ -194,6 +218,7 @@ class _AddStaffState extends State<AddStaff> {
                       'Save',
                       style: app_textstyles.appBarTitle.copyWith(
                         fontSize: 20,
+                        color: Colors.white
 
                       ),
                     ),

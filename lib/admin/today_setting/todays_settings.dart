@@ -122,6 +122,7 @@ class _TodaysSettingsState extends State<TodaysSettings> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
           "Today's Settings",
           style: app_textstyles.appBarTitle.copyWith(color: Colors.white),
@@ -139,6 +140,10 @@ class _TodaysSettingsState extends State<TodaysSettings> {
                 controller: searchCtrl,
                 decoration: InputDecoration(
                   hintText: "Search Doctor",
+                    hintStyle: TextStyle(
+                      color: AppColors.hint_text,
+                      fontSize: 16,
+                    ),
                   prefixIcon: Icon(Icons.search),
                   filled: true,
                   fillColor: AppColors.card_primary,

@@ -11,25 +11,32 @@ import 'package:hospital_app/theme/app_textstyles.dart';
 class AdminDashboard extends StatefulWidget {
   final String hospitalName;
 
-  const AdminDashboard({super.key, this.hospitalName = ''});
+
+  const AdminDashboard({
+    super.key,
+    this.hospitalName = '',
+  });
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
+
   String selectManage = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
 
-        title: Text(
-          'Dashboard',
-          style: app_textstyles.appBarTitle.copyWith(
-            color: AppColors.inputColor,
+        title: Center(
+          child: Text(
+            'Dashboard',
+            style: app_textstyles.appBarTitle.copyWith(
+              color: AppColors.inputColor,
+            ),
           ),
         ),
         actions: [
@@ -89,8 +96,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 else if (value == 'settings') {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => Settings(),
+                    MaterialPageRoute(
+                      builder: (_) => Settings(),
                     ),
+
                   );
                 }
               });
@@ -194,8 +203,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(0.6),
-              Colors.white.withOpacity(0.2),
+              Theme.of(context).cardColor.withOpacity(0.7),
+              Theme.of(context).cardColor.withOpacity(0.3),
             ],
           ),
 
@@ -210,12 +219,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
           // glass shadow
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Theme.of(context).shadowColor.withOpacity(0.2),
               blurRadius: 8,
               offset: Offset(0, 4),
             ),
             BoxShadow(
-              color: Colors.white.withOpacity(0.6),
+              color: Theme.of(context).highlightColor.withOpacity(0.3),
               blurRadius: 4,
               offset: Offset(-2, -2),
             ),

@@ -40,4 +40,22 @@ class AppColors {
 
   /// STAR / ACCENT
   static const Color star = Color(0xFF6FA8DC);
+
+
+  /// DARK THEME COLORS
+
+  static const Color dark_background = Color(0xFF0F172A); // deep navy
+  static const Color dark_card = Color(0xFF1E293B);
+  static const Color dark_card_highlight = Color(0xFF334155);
+
+  static const Color dark_input = Color(0xFF1E293B);
+  static const Color dark_input_border = Color(0xFF475569);
+
+  static const Color dark_primary_text = Color(0xFFF1F5F9);
+  static const Color dark_subtitle = Color(0xFFCBD5E1);
+  static const Color dark_body_text = Color(0xFF94A3B8);
+  static const Color dark_hint = Color(0xFF64748B);
+
+  static const Color dark_app_bar = Color(0xFF020617);
+  static const Color dark_icon = Color(0xFFE2E8F0);
 }

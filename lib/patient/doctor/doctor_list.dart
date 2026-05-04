@@ -86,6 +86,7 @@ class _DoctorListState extends State<DoctorList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
           "আজ যেসব ডাক্তার বসবেন",
           style: app_textstyles.appBarTitle.copyWith(color: Colors.white),
@@ -122,7 +123,9 @@ class _DoctorListState extends State<DoctorList> {
               controller: searchCtrl,
               decoration: InputDecoration(
                 hintText: "ডাক্তার খুঁজুন",
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(
+                    color: AppColors.hint_text,),
+                prefixIcon:  Icon(Icons.search,color: AppColors.primary,),
                 filled: true,
                 fillColor: AppColors.card_primary,
                 border: OutlineInputBorder(

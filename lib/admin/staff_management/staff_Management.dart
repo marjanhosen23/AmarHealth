@@ -58,11 +58,17 @@ class _StaffManagementState extends State<StaffManagement> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [const Text("Staff Management")],
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title:
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [ Text("Staff Management",style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold
+            ),)],
+          ),
         ),
-      ),
+
       body: Column(
         children: [
           /// Add Staff Button
@@ -306,124 +312,78 @@ class _StaffCardState extends State<StaffCard> {
 
           Row(
             children: [
+
+              /// Change Pin
               Expanded(
                 child: ElevatedButton(
                   onPressed: widget.onChangePin,
-                  style:
-                      ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        elevation: 0,
-
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ).copyWith(
-                        overlayColor: MaterialStateProperty.all(
-                          Colors.transparent,
-                        ),
-                      ),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF8BCAFE), Color(0xFF70AADE)],
-                      ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8FBCE6),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Center(
-                      child: Text(
-                        "Change Pin",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                  ),
+                  child: const Text(
+                    "Change Pin",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
 
+              /// Activate / Deactivate
               Expanded(
                 child: ElevatedButton(
                   onPressed: widget.onToggleStatus,
-                  style:
-                      ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        elevation: 0,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.status == "Active"
+                        ? const Color(0xFFFFA500)   // deactivate (yellow/orange)
+                        : const Color(0xFF81C784),  // activate (green)
 
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ).copyWith(
-                        overlayColor: MaterialStateProperty.all(
-                          Colors.transparent,
-                        ),
-                      ),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
 
-                      gradient: LinearGradient(
-                        colors: widget.status == "Active"
-                            ? [Colors.orangeAccent, Colors.orange]
-                            : [Colors.green, Colors.greenAccent],
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Center(
-                      child: Text(
-                        widget.status == "Active" ? "Deactivate" : "Activate",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                  ),
+                  child: Text(
+                    widget.status == "Active" ? "Deactivate" : "Activate",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
 
+              const SizedBox(width: 10),
+
+              /// Remove
               Expanded(
                 child: ElevatedButton(
                   onPressed: widget.onRemove,
-                  style:
-                      ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        elevation: 0,
-
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ).copyWith(
-                        overlayColor: MaterialStateProperty.all(
-                          Colors.transparent,
-                        ),
-                      ),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-
-                      // red gradient
-                      gradient: LinearGradient(
-                        colors: [Colors.redAccent, Colors.red],
-                      ),
-
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8FBCE6),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Center(
-                      child: Text(
-                        "Remove",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  ),
+                  child: const Text(
+                    "Remove",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),

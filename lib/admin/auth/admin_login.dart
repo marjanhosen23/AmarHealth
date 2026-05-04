@@ -64,8 +64,8 @@ class _AdminLoginState extends State<AdminLogin> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.card_primary.withOpacity(0.9),
-                    AppColors.card_primary.withOpacity(0.8),
+                    Theme.of(context).cardColor.withOpacity(0.9),
+                    Theme.of(context).cardColor.withOpacity(0.8),
                   ],
                 ),
 
@@ -75,12 +75,12 @@ class _AdminLoginState extends State<AdminLogin> {
                 //  shadow
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
+                    color: Theme.of(context).shadowColor.withOpacity(0.25),
                     blurRadius: 10,
                     offset: Offset(0, 6),
                   ),
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Theme.of(context).highlightColor.withOpacity(0.3),
                     blurRadius: 6,
                     offset: Offset(-2, -2),
                   ),
@@ -92,7 +92,9 @@ class _AdminLoginState extends State<AdminLogin> {
 
                 children: [
                   Center(
-                    child: Text('LOGIN', style: app_textstyles.sectionTitle),
+                    child: Text('LOGIN', style: app_textstyles.sectionTitle.copyWith(
+                      color: AppColors.primary,
+                    )),
                   ),
 
                   SizedBox(height: 20),
@@ -102,12 +104,12 @@ class _AdminLoginState extends State<AdminLogin> {
                     decoration: InputDecoration(
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Color(0xFF8CCBFF)),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(
-                          color: Color(0xFF6FA8DC),
+                          color: Theme.of(context).colorScheme.primary,
                           width: 2,
                         ),
                       ),
@@ -124,12 +126,33 @@ class _AdminLoginState extends State<AdminLogin> {
                     controller: pinController,
                     obscureText: hidePin,
                     keyboardType: TextInputType.text,
+
                     decoration: InputDecoration(
                       labelText: 'Hospital PIN',
                       labelStyle: TextStyle(
                         color: AppColors.primary,
                         fontSize: 16,
                       ),
+
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: AppColors.inputNormal_border,
+                        ),
+                      ),
+
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: AppColors.inputfocas_border,
+                          width: 2,
+                        ),
+                      ),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+
                       suffixIcon: IconButton(
                         icon: Icon(
                           hidePin ? Icons.visibility_off : Icons.visibility,
@@ -147,47 +170,40 @@ class _AdminLoginState extends State<AdminLogin> {
                   Center(
                     child: SizedBox(
                       width: 142,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : _login,
-                        style:
-                            ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              elevation: 0,
-
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ).copyWith(
-                              overlayColor: MaterialStateProperty.all(
-                                Colors.transparent,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: isLoading ? null : _login,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                  Theme.of(context).colorScheme.primary,
+                                ],
                               ),
                             ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: LinearGradient(
-                              colors: [Color(0xFF8CCBFF), Color(0xFF6FA8DC)],
+                            child: Center(
+                              child: isLoading
+                                  ? SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                                  : Text(
+                                'Login',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: isLoading
-                                ? const SizedBox(
-                                    height: 18,
-                                    width: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Login',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
                           ),
                         ),
                       ),
@@ -200,7 +216,9 @@ class _AdminLoginState extends State<AdminLogin> {
                     children: [
                       Text(
                         'Don’t have an account?',
-                        style: app_textstyles.body,
+                        style: app_textstyles.body.copyWith(
+                          color: AppColors.primary
+                        ),
                       ),
                       GestureDetector(
                         onTap: () {
@@ -260,7 +278,43 @@ class _AdminLoginState extends State<AdminLogin> {
 
       final data = snapshot.data();
 
+      /// SOFT DELETE CHECK (✔ সঠিক জায়গা)
+      if (data?['deleted'] == true) {
+        final Timestamp? ts = data?['deleteTime'];
+
+        if (ts != null) {
+          final deleteTime = ts.toDate();
+          final now = DateTime.now();
+          final diff = now.difference(deleteTime);
+
+          /// 30 days passed → delete
+          if (diff.inDays > 30) {
+            await FirebaseFirestore.instance
+                .collection('hospitals')
+                .doc(hospitalKey)
+                .delete();
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Account permanently deleted')),
+            );
+
+            setState(() => isLoading = false);
+            return;
+          }
+        }
+
+        ///  within 30 days → restore
+        await FirebaseFirestore.instance
+            .collection('hospitals')
+            .doc(hospitalKey)
+            .update({
+          'deleted': false,
+          'deleteTime': null,
+        });
+      }
+
       if (data == null || data['pin'] != enteredPin) {
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid PIN')),
         );
@@ -277,8 +331,9 @@ class _AdminLoginState extends State<AdminLogin> {
         MaterialPageRoute(
           builder: (_) => AdminDashboard(
             hospitalName: data['name'],
+
+          )
           ),
-        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

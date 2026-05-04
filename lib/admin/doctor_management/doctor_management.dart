@@ -58,7 +58,11 @@ class _DoctorManagementState extends State<DoctorManagement> {
     return Scaffold(
 
       appBar: AppBar(
-        title: const Text("Doctor Management"),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title:Text("Doctor Management",style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),),
       ),
 
       body: Column(
@@ -138,36 +142,36 @@ class _DoctorManagementState extends State<DoctorManagement> {
                   dept: doctors[index]['dept'] ?? '',
                   time: doctors[index]['time'] ?? '',
 
-                    onEdit: () async {
-                      final updated = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AddDoctor(
-                            name: doctors[index]['name'],
-                            dept: doctors[index]['dept'],
-                            time: doctors[index]['time'],
-                          ),
+                  onEdit: () async {
+                    final updated = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddDoctor(
+                          name: doctors[index]['name'],
+                          dept: doctors[index]['dept'],
+                          time: doctors[index]['time'],
                         ),
-                      );
+                      ),
+                    );
 
-                      if (updated != null) {
-                        final hospitalKey = hospitalId.trim().toLowerCase();
-                        final docId = doctors[index]['id'];
+                    if (updated != null) {
+                      final hospitalKey = hospitalId.trim().toLowerCase();
+                      final docId = doctors[index]['id'];
 
-                        await FirebaseFirestore.instance
-                            .collection('hospitals')
-                            .doc(hospitalKey)
-                            .collection('doctors')
-                            .doc(docId)
-                            .update(updated);
+                      await FirebaseFirestore.instance
+                          .collection('hospitals')
+                          .doc(hospitalKey)
+                          .collection('doctors')
+                          .doc(docId)
+                          .update(updated);
 
-                        updated['id'] = docId;
+                      updated['id'] = docId;
 
-                        setState(() {
-                          doctors[index] = updated;
-                        });
-                      }
-                    },
+                      setState(() {
+                        doctors[index] = updated;
+                      });
+                    }
+                  },
 
                   onDelete: () async {
                     final hospitalKey = hospitalId.trim().toLowerCase();

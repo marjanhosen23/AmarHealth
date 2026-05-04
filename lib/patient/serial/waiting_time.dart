@@ -131,6 +131,7 @@ class _WaitingTimeState extends State<WaitingTime> {
     return Scaffold(
 
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Image.asset('assets/icons/arrow.png', color: Colors.white),

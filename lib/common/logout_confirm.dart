@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hospital_app/admin/auth/admin_login.dart';
+import 'package:hospital_app/common/role_select.dart';
 import 'package:hospital_app/theme/app_colors.dart';
 import 'package:hospital_app/theme/app_textstyles.dart';
 
@@ -77,7 +78,7 @@ class LogoutConfirm extends StatelessWidget {
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => AdminLogin(),
+                          builder: (_) => RoleSelect(),
                         ),
                             (route) => false,
                       );
