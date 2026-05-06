@@ -30,7 +30,7 @@ class _HospitalListState extends State<HospitalList> {
   void loadHospitals() async {
     final snapshot = await FirebaseFirestore.instance
         .collection('hospitals')
-        .get();
+        .get(const GetOptions(source: Source.server));
 
     hospitals = snapshot.docs.where((doc) {
       final data = doc.data();

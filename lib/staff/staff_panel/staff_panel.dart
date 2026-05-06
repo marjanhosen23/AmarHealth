@@ -28,7 +28,6 @@ class _StaffPanelState extends State<StaffPanel> {
     super.initState();
     loadData();
 
-    /// AUTO UPDATE EVERY 30 SEC
     timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       updateStatus();
     });
@@ -43,27 +42,78 @@ class _StaffPanelState extends State<StaffPanel> {
   void loadData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    hospitalName = prefs.getString('currentHospital') ?? "";
-    final hospitalKey = formatHospitalKey(hospitalName);
+    hospitalName = prefs.getString('hospitalName') ?? "";
+    final hospitalKey = prefs.getString('hospitalKey') ?? "";
 
-    ///LOCAL LOAD
-    final data = prefs.getString('today_settings_$hospitalKey');
+    if (hospitalKey.isEmpty) {
+      print("hospitalKey EMPTY");
+      return;
+    }
 
-    if (data != null) {
-      todaySettings =
-      List<Map<String, dynamic>>.from(jsonDecode(data));
+    final selectedData = prefs.getString('selected_doctors_$hospitalKey');
+
+    List<String> selectedDoctors = [];
+
+    if (selectedData != null) {
+      selectedDoctors = List<String>.from(jsonDecode(selectedData));
     }
 
     /// FIREBASE LOAD
-    final snapshot = await FirebaseFirestore.instance
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('hospitals')
         .doc(hospitalKey)
         .collection('today_settings')
         .get();
 
-    if (snapshot.docs.isNotEmpty) {
-      todaySettings =
-          snapshot.docs.map((doc) => doc.data()).toList();
+    /// fallback
+    if (snapshot.docs.isEmpty) {
+      snapshot = await FirebaseFirestore.instance
+          .collection('hospitals')
+          .doc(hospitalKey)
+          .collection('doctors')
+          .get();
+    }
+
+    List<Map<String, dynamic>> allDoctors = snapshot.docs.map((doc) {
+
+      final raw = doc.data();
+
+      if (raw == null) return <String, dynamic>{};
+
+      final data = Map<String, dynamic>.from(raw as Map);
+
+      /// firebase doc id
+      data['firebaseId'] = doc.id;
+
+      return data;
+
+    }).toList();
+
+    /// DEBUG
+    print("SelectedDoctors: $selectedDoctors");
+
+    for (var doc in allDoctors) {
+      print("DoctorID: ${doc['doctorId']}");
+      print("FirebaseID: ${doc['firebaseId']}");
+    }
+
+    /// FILTER
+    if (selectedDoctors.isEmpty) {
+
+      todaySettings = [];
+
+    } else {
+
+      todaySettings = allDoctors.where((doc) {
+
+        final doctorId =
+        (doc['doctorId'] ?? doc['firebaseId'])
+            .toString()
+            .trim();
+
+        return selectedDoctors.contains(doctorId);
+
+      }).toList();
     }
 
     setState(() {});
@@ -71,20 +121,23 @@ class _StaffPanelState extends State<StaffPanel> {
 
   void saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final hospitalKey = formatHospitalKey(hospitalName);
+
+    final hospitalKey = prefs.getString('hospitalKey') ?? "";
+
+    if (hospitalKey.isEmpty) return;
 
     prefs.setString(
       'today_settings_$hospitalKey',
       jsonEncode(todaySettings),
     );
 
-    /// FIREBASE SAVE
     for (var doc in todaySettings) {
+      doc['doctorId'] = doc['id'];
       await FirebaseFirestore.instance
           .collection('hospitals')
           .doc(hospitalKey)
           .collection('today_settings')
-          .doc(doc['name'])
+          .doc(doc['id'])
           .set(doc);
     }
   }
@@ -96,7 +149,6 @@ class _StaffPanelState extends State<StaffPanel> {
     saveSettings();
   }
 
-  /// AUTO STATUS UPDATE
   void updateStatus() {
     final now = TimeOfDay.now();
 
@@ -127,7 +179,6 @@ class _StaffPanelState extends State<StaffPanel> {
     setState(() {});
   }
 
-  /// TIME PARSER
   TimeOfDay parseTime(String time) {
     final parts = time.split(":");
     return TimeOfDay(
@@ -142,10 +193,13 @@ class _StaffPanelState extends State<StaffPanel> {
     return Scaffold(
 
       appBar: AppBar(
-        title: Text("Staff Panel",style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),),
+        title: Text(
+          "Staff Panel",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Theme.of(context).primaryColor,
       ),
 
@@ -170,8 +224,6 @@ class _StaffPanelState extends State<StaffPanel> {
 
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-
-              // glass look
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -180,11 +232,9 @@ class _StaffPanelState extends State<StaffPanel> {
                   AppColors.card_primary.withOpacity(0.2),
                 ],
               ),
-
               border: Border.all(
                 color: Colors.white.withOpacity(0.5),
               ),
-
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2),
@@ -234,7 +284,7 @@ class _StaffPanelState extends State<StaffPanel> {
                         ? () => nextPatient(index)
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:AppColors.primary,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                     ),
                     child: Text("Next"),

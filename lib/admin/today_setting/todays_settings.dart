@@ -53,7 +53,7 @@ class _TodaysSettingsState extends State<TodaysSettings> {
         .collection('hospitals')
         .doc(hospitalKey)
         .collection('doctors')
-        .get();
+        .get(const GetOptions(source: Source.server));
 
     final data = snapshot.docs.map((doc) => doc.data()).toList();
 
@@ -95,7 +95,9 @@ class _TodaysSettingsState extends State<TodaysSettings> {
 
     ///  add fresh data
     for (var doc in doctors) {
-      await ref.doc(doc['name']).set(doc);
+      if (doc['name'] == null || doc['name'].toString().trim().isEmpty) continue;
+
+      await ref.doc(doc['name'].toString().trim()).set(doc);
     }
   }
 

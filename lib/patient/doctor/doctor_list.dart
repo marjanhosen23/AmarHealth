@@ -58,7 +58,7 @@ class _DoctorListState extends State<DoctorList> {
         .collection('hospitals')
         .doc(hospitalKey)
         .collection('today_settings')
-        .get();
+        .get(const GetOptions(source: Source.server));
 
     if (snapshot.docs.isNotEmpty) {
       final firebaseDoctors =

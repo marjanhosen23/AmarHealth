@@ -37,7 +37,8 @@ class _SelectDoctorState extends State<SelectDoctor> {
   /// load hospital
   void loadHospital() async {
     final prefs = await SharedPreferences.getInstance();
-    hospitalName = prefs.getString('currentHospital') ?? "";
+    hospitalName = prefs.getString('hospitalName') ?? "";
+    final hospitalKey = prefs.getString('hospitalKey') ?? "";
 
     if (hospitalName.isNotEmpty) {
       loadDoctors();
@@ -45,11 +46,11 @@ class _SelectDoctorState extends State<SelectDoctor> {
     }
   }
 
-  /// load doctors (SharedPreferences)
+  /// load doctors
   void loadDoctors() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final hospitalKey = formatHospitalKey(hospitalName);
+    final hospitalKey = prefs.getString('hospitalKey') ?? "";
 
     /// LOCAL FIRST
     final data = prefs.getString('doctors_$hospitalKey');
@@ -70,8 +71,8 @@ class _SelectDoctorState extends State<SelectDoctor> {
     if (snapshot.docs.isNotEmpty) {
       doctors = snapshot.docs.map((doc) {
         final data = doc.data();
-        data['name'] ??= "No Name";
-        data['dept'] ??= "General";
+        data['id'] = data['name'];
+        data['name'] ??= "Doctor";
         return data;
       }).toList();
     }
@@ -83,12 +84,13 @@ class _SelectDoctorState extends State<SelectDoctor> {
   void loadSelectedDoctors() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final hospitalKey = formatHospitalKey(hospitalName);
+    final hospitalKey = prefs.getString('hospitalKey') ?? "";
 
     final data = prefs.getString('selected_doctors_$hospitalKey');
 
     if (data != null) {
       selectedDoctors = List<String>.from(jsonDecode(data));
+      selectedDoctors = selectedDoctors.where((e) => e is String).toList();
       setState(() {});
     }
   }
@@ -203,17 +205,18 @@ class _SelectDoctorState extends State<SelectDoctor> {
 
                   final doctor = filteredDoctors[index];
                   final name = doctor['name'] ?? "No Name";
+                  final id = doctor['id']?.toString();
+                  if (id == null) return SizedBox();
 
-                  bool isSelected =
-                  selectedDoctors.contains(name);
+                  bool isSelected = selectedDoctors.contains(id);
 
                   return GestureDetector(
                     onTap: () {
                       setState(() {
                         if (isSelected) {
-                          selectedDoctors.remove(name);
+                          selectedDoctors.remove(id.toString());
                         } else {
-                          selectedDoctors.add(name);
+                          selectedDoctors.add(id.toString());
                         }
                       });
                     },
@@ -258,9 +261,9 @@ class _SelectDoctorState extends State<SelectDoctor> {
                             onChanged: (value) {
                               setState(() {
                                 if (isSelected) {
-                                  selectedDoctors.remove(name);
+                                  selectedDoctors.remove(id);
                                 } else {
-                                  selectedDoctors.add(name);
+                                  selectedDoctors.add(id);
                                 }
                               });
                             },
@@ -321,8 +324,7 @@ class _SelectDoctorState extends State<SelectDoctor> {
                 final prefs =
                 await SharedPreferences.getInstance();
 
-                final hospitalKey =
-                formatHospitalKey(hospitalName);
+                final hospitalKey = prefs.getString('hospitalKey') ?? "";
 
                 await prefs.setString(
                   'selected_doctors_$hospitalKey',

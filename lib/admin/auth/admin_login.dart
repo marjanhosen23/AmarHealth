@@ -7,6 +7,10 @@ import 'package:hospital_app/theme/app_textstyles.dart';
 import 'package:hospital_app/admin/dashboard/admin_dashboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:hospital_app/admin/auth/forgetpassword.dart';
+
 
 class AdminLogin extends StatefulWidget {
   const AdminLogin({super.key});
@@ -18,6 +22,9 @@ class AdminLogin extends StatefulWidget {
 class _AdminLoginState extends State<AdminLogin> {
   final TextEditingController hospitalController = TextEditingController();
   final TextEditingController pinController = TextEditingController();
+
+
+
   bool isLoading = false;
   bool hidePin = true;
 
@@ -237,6 +244,30 @@ class _AdminLoginState extends State<AdminLogin> {
                       ),
                     ],
                   ),
+
+                  Align(
+                    alignment: Alignment.center,
+                    child: TextButton(
+                      onPressed: () {
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Forgetpassword(),
+                          ),
+                        );
+
+                      },
+
+                      child: Text(
+                        "Forgot Password?",
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                   Padding(padding: EdgeInsets.all(40)),
                 ],
               ),
@@ -251,6 +282,9 @@ class _AdminLoginState extends State<AdminLogin> {
     final enteredHospital = hospitalController.text.trim();
     final enteredPin = pinController.text.trim();
 
+    String email = "${enteredHospital.toLowerCase().replaceAll(' ', '')}@app.com";
+    String password = enteredPin;
+
     if (enteredHospital.isEmpty || enteredPin.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All fields are required')),
@@ -263,10 +297,11 @@ class _AdminLoginState extends State<AdminLogin> {
     final hospitalKey = enteredHospital.toLowerCase();
 
     try {
+      /// Firestore check
       final snapshot = await FirebaseFirestore.instance
           .collection('hospitals')
           .doc(hospitalKey)
-          .get();
+          .get(const GetOptions(source: Source.server));
 
       if (!snapshot.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -278,7 +313,7 @@ class _AdminLoginState extends State<AdminLogin> {
 
       final data = snapshot.data();
 
-      /// SOFT DELETE CHECK (✔ সঠিক জায়গা)
+      ///Soft delete
       if (data?['deleted'] == true) {
         final Timestamp? ts = data?['deleteTime'];
 
@@ -287,7 +322,6 @@ class _AdminLoginState extends State<AdminLogin> {
           final now = DateTime.now();
           final diff = now.difference(deleteTime);
 
-          /// 30 days passed → delete
           if (diff.inDays > 30) {
             await FirebaseFirestore.instance
                 .collection('hospitals')
@@ -303,7 +337,6 @@ class _AdminLoginState extends State<AdminLogin> {
           }
         }
 
-        ///  within 30 days → restore
         await FirebaseFirestore.instance
             .collection('hospitals')
             .doc(hospitalKey)
@@ -313,8 +346,8 @@ class _AdminLoginState extends State<AdminLogin> {
         });
       }
 
+      ///PIN check (UNCHANGED)
       if (data == null || data['pin'] != enteredPin) {
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid PIN')),
         );
@@ -322,24 +355,42 @@ class _AdminLoginState extends State<AdminLogin> {
         return;
       }
 
-      /// save current hospital
+      ///FirebaseAuth login (ADDED)
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      /// save hospital (unchanged)
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('currentHospital', hospitalKey);
+      await prefs.setString('hospitalKey', hospitalKey);
+      await prefs.setString('hospitalName', data?['name']);
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => AdminDashboard(
             hospitalName: data['name'],
-
-          )
           ),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Login failed')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     }
+    var result = await Connectivity().checkConnectivity();
+    if (result == ConnectivityResult.none) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No internet connection')),
+      );
+      return;
+    }
+
 
     setState(() => isLoading = false);
   }

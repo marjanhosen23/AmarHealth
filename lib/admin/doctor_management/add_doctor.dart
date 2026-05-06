@@ -177,7 +177,7 @@ class _AddDoctorState extends State<AddDoctor> {
                     Navigator.pop(context, {
                       'name': nameCtrl.text,
                       'dept': deptCtrl.text,
-                      'time': timeCtrl.text,
+                      'time': int.tryParse(timeCtrl.text) ?? 5,
                     });
                   },
                   style:

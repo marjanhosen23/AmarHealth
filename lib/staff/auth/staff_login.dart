@@ -317,7 +317,8 @@ class _StaffLoginState extends State<StaffLogin> {
 
       if (isValid) {
         ///use hospitalKey (not original)
-        await prefs.setString('currentHospital', hospitalKey);
+        await prefs.setString('hospitalKey', hospitalKey);
+        await prefs.setString('hospitalName', hospital);
 
         Navigator.push(
           context,

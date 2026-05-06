@@ -15,12 +15,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  shared_preferences: ^2.2.2   # local storage
-  intl: ^0.19.0               # date/time formatting
+  shared_preferences: ^2.2.2
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.8
 
-  cupertino_icons: ^1.0.8     # iOS style icons
-  firebase_core: ^4.7.0       # Firebase init
-  cloud_firestore: ^6.3.0     # Firestore database
+  firebase_core: ^3.15.2
+  firebase_auth: ^5.7.0
+  cloud_firestore: ^5.6.0
+  connectivity_plus: ^6.0.3
 
 # Dev dependencies (build tools, testing)
 dev_dependencies:

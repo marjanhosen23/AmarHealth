@@ -39,7 +39,7 @@ class _StaffManagementState extends State<StaffManagement> {
         .collection('hospitals')
         .doc(hospitalKey)
         .collection('staffs')
-        .get();
+        .get(const GetOptions(source: Source.server));
 
     final data = snapshot.docs.map((doc) {
       final d = Map<String, dynamic>.from(doc.data());

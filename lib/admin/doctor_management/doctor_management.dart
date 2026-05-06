@@ -37,7 +37,7 @@ class _DoctorManagementState extends State<DoctorManagement> {
         .collection('hospitals')
         .doc(hospitalKey)
         .collection('doctors')
-        .get();
+        .get(const GetOptions(source: Source.server));
 
     final data = snapshot.docs.map((doc) {
       final d = Map<String, dynamic>.from(doc.data());

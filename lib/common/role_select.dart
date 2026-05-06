@@ -6,7 +6,7 @@ import 'package:hospital_app/theme/app_colors.dart';
 import 'package:hospital_app/theme/app_textstyles.dart';
 
 class RoleSelect extends StatefulWidget {
-   RoleSelect({super.key});
+  const RoleSelect({super.key});
 
   @override
   State<RoleSelect> createState() => _RoleSelectState();
@@ -15,6 +15,23 @@ class RoleSelect extends StatefulWidget {
 class _RoleSelectState extends State<RoleSelect> {
   String selectedRole = '';
 
+  void handleTap() {
+    if (selectedRole.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('আগে একটি Role নির্বাচন করুন')),
+      );
+      return;
+    }
+
+    if (selectedRole == 'User') {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => HospitalList()));
+    } else if (selectedRole == 'Staff') {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => StaffLogin()));
+    } else if (selectedRole == 'Admin') {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => AdminLogin()));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,23 +39,22 @@ class _RoleSelectState extends State<RoleSelect> {
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).scaffoldBackgroundColor,
-                Theme.of(context).scaffoldBackgroundColor,
-                Theme.of(context).scaffoldBackgroundColor,
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.30),
-                blurRadius: 10,
-                offset: Offset(0, 6),
-              )
-            ]
-
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).scaffoldBackgroundColor,
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.30),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
+            )
+          ],
         ),
         child: Stack(
           children: [
@@ -52,11 +68,13 @@ class _RoleSelectState extends State<RoleSelect> {
               ),
             ),
             Positioned(
-              top: 320,
+              top: 300,
               left: 13,
               right: 13,
+
+
               child: Container(
-                padding:  EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -73,12 +91,12 @@ class _RoleSelectState extends State<RoleSelect> {
                     BoxShadow(
                       color: Theme.of(context).shadowColor.withOpacity(0.25),
                       blurRadius: 10,
-                      offset: Offset(0, 6),
+                      offset: const Offset(0, 6),
                     ),
                     BoxShadow(
-                      color:Theme.of(context).cardColor.withOpacity(0.6),
+                      color: Theme.of(context).cardColor.withOpacity(0.6),
                       blurRadius: 6,
-                      offset: Offset(-2, -2),
+                      offset: const Offset(-2, -2),
                     ),
                   ],
                   borderRadius: BorderRadius.circular(20),
@@ -89,88 +107,86 @@ class _RoleSelectState extends State<RoleSelect> {
                       "আপনি কে?",
                       style: app_textstyles.sectionTitle,
                     ),
-                     SizedBox(height: 20),
+                    const SizedBox(height: 20),
+
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Column(
-                          children: [
-                            roleCard('User', 'assets/icons/woman.png'),
-                             SizedBox(height: 20),
-                            roleCard('Admin', 'assets/icons/admin.png'),
-                          ],
-                        ),
-                         SizedBox(width: 20),
-                        roleCard('Staff', 'assets/icons/staff.png'),
-                      ],
-                    ),
-                     SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: GestureDetector(
-                        onTap: () {
-                          if (selectedRole.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('আগে একটি Role নির্বাচন করুন')),
-                            );
-                            return;
-                          }
-
-                          if (selectedRole == 'User') {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => HospitalList()));
-                          } else if (selectedRole == 'Staff') {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => StaffLogin()));
-                          } else if (selectedRole == 'Admin') {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => AdminLogin()));
-                          }
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 14),
-
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.primary.withOpacity(0.8),
-                                AppColors.primary.withOpacity(0.6),
-                              ],
-                            ),
-
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(context).shadowColor.withOpacity(0.25),
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        Expanded(
+                          child: Column(
                             children: [
-                              Text(
-                                'Get Started',
-                                style: app_textstyles.button.copyWith(color: Colors.white),
+                              AspectRatio(
+                                aspectRatio: 1,
+                                child: roleCard('User', 'assets/icons/woman.png'),
                               ),
-                              SizedBox(width: 8),
-                              Image.asset(
-                                'assets/icons/right-arrow.png',
-                                width: 18,
-                                color: Colors.white,
+                              const SizedBox(height: 16),
+                              AspectRatio(
+                                aspectRatio: 1,
+                                child: roleCard('Admin', 'assets/icons/admin.png'),
                               ),
                             ],
                           ),
                         ),
-                      )
-                    ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: roleCard('Staff', 'assets/icons/staff.png'),
+                          ),
+                        ),
+                        SizedBox(height: 20,)
+                      ],
+                    )
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+
+      // Bottom button
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          child: GestureDetector(
+            onTap: handleTap,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.8),
+                    AppColors.primary.withOpacity(0.6),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Get Started',
+                    style: app_textstyles.button.copyWith(color: Colors.white),
+                  ),
+                  const SizedBox(width: 8),
+                  Image.asset(
+                    'assets/icons/right-arrow.png',
+                    width: 18,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -186,41 +202,39 @@ class _RoleSelectState extends State<RoleSelect> {
         });
       },
       child: Container(
-        width: 140,
-        padding:  EdgeInsets.all(20),
+
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-
           gradient: LinearGradient(
             colors: [
               Theme.of(context).cardColor.withOpacity(0.6),
               Theme.of(context).cardColor.withOpacity(0.2)
             ],
           ),
-
           border: Border.all(
             color: isSelected
                 ? AppColors.primary
                 : Colors.white.withOpacity(0.5),
             width: 2,
           ),
-
           boxShadow: [
             BoxShadow(
               color: Theme.of(context).shadowColor.withOpacity(0.25),
               blurRadius: 10,
-              offset: Offset(0, 6),
+              offset: const Offset(0, 6),
             ),
             BoxShadow(
               color: Colors.white.withOpacity(0.6),
               blurRadius: 6,
-              offset: Offset(-2, -2),
+              offset: const Offset(-2, -2),
             ),
           ],
         ),
         child: Column(
           children: [
-            Image.asset(imagePath, width: 72, height: 72), SizedBox(height: 8),
+            Image.asset(imagePath, width: 72, height: 72),
+            const SizedBox(height: 8),
             Text(title, style: app_textstyles.cardTitle),
           ],
         ),

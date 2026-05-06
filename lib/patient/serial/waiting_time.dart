@@ -29,6 +29,8 @@ class _WaitingTimeState extends State<WaitingTime> {
   int waitingTime = 0;
   int yourSerial = 0;
 
+  String statusMessage = "";
+
   Timer? timer;
 
   @override
@@ -47,13 +49,16 @@ class _WaitingTimeState extends State<WaitingTime> {
     super.dispose();
   }
 
-  /// convert time → minutes
-  int parseToMinutes(String time) {
+  /// SAFE parse function (fix crash)
+  int parseToMinutes(String? time) {
+    if (time == null || time.isEmpty || !time.contains(":")) {
+      return 0;
+    }
+
     final parts = time.split(":");
     return int.parse(parts[0]) * 60 + int.parse(parts[1]);
   }
 
-  /// main logic
   void loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final hospitalKey = widget.hospital.trim().toLowerCase();
@@ -64,7 +69,7 @@ class _WaitingTimeState extends State<WaitingTime> {
     int avgTime = 5;
     int delay = 0;
 
-    /// LOCAL (same as before)
+    /// LOCAL
     if (data != null) {
       List list = jsonDecode(data);
 
@@ -85,36 +90,42 @@ class _WaitingTimeState extends State<WaitingTime> {
       }
     }
 
-    /// FIREBASE LOAD
+    /// FIREBASE
     final snapshot = await FirebaseFirestore.instance
         .collection('hospitals')
         .doc(hospitalKey)
         .collection('today_settings')
         .doc(widget.doctor['name'])
-        .get();
+        .get(const GetOptions(source: Source.server));
 
     if (snapshot.exists) {
       final doc = snapshot.data();
 
+      int start = parseToMinutes(doc?['startTime']);
+      int end = parseToMinutes(doc?['endTime']);
+
+      TimeOfDay now = TimeOfDay.now();
+      int currentTime = now.hour * 60 + now.minute;
+
+      ///STATUS LOGIC (fixed)
+      if (currentTime < start && start != 0) {
+        statusMessage = "ডাক্তার এখনও আসেনি";
+      } else if (currentTime > end && end != 0) {
+        statusMessage = "এই শিফট শেষ হয়েছে";
+        waitingTime = 0;
+      } else {
+        statusMessage = "";
+      }
+
       current = doc?['nowServing'] ?? current;
+      avgTime = doc?['time'] ?? avgTime;
 
-      String timeStr = doc?['time'] ?? "5";
-      avgTime = int.tryParse(
-        timeStr.replaceAll(RegExp(r'[^0-9]'), ''),
-      ) ?? avgTime;
-
-      if (doc?['startTime'] != null) {
-        int start = parseToMinutes(doc!['startTime']);
-        TimeOfDay now = TimeOfDay.now();
-        int currentTime = now.hour * 60 + now.minute;
-
-        if (currentTime < start) {
-          delay = start - currentTime;
-        }
+      if (start != 0 && currentTime < start) {
+        delay = start - currentTime;
       }
     }
 
-    /// CALCULATION SAME
+    /// CALCULATION
     yourSerial = int.tryParse(widget.serial) ?? 0;
     beforeYou = yourSerial - current;
     if (beforeYou < 0) beforeYou = 0;
@@ -128,8 +139,9 @@ class _WaitingTimeState extends State<WaitingTime> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final hospitalKey = widget.hospital.trim().toLowerCase();
 
+    return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
@@ -144,85 +156,119 @@ class _WaitingTimeState extends State<WaitingTime> {
         ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('hospitals')
+            .doc(hospitalKey)
+            .collection('today_settings')
+            .doc(widget.doctor['name'])
+            .snapshots(),
 
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return Center(child: CircularProgressIndicator());
+          }
 
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+          final doc = snapshot.data!.data() as Map<String, dynamic>;
 
-            // glass gradient
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.card_primary.withOpacity(0.8),
-                AppColors.card_primary.withOpacity(0.2),
-              ],
-            ),
+          int current = doc['nowServing'] ?? 0;
+          int avgTime = doc['time'] ?? 5;
 
-            //  border highlight
-            border: Border.all(
-              color: Colors.white.withOpacity(0.5),
-            ),
+          int start = parseToMinutes(doc['startTime']);
+          int end = parseToMinutes(doc['endTime']);
 
-            //  soft shadow
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: Offset(0, 5),
-              ),
-              BoxShadow(
-                color: Colors.white.withOpacity(0.6),
-                blurRadius: 4,
-                offset: Offset(-2, -2),
-              ),
-            ],
-          ),
+          TimeOfDay now = TimeOfDay.now();
+          int currentTime = now.hour * 60 + now.minute;
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          int delay = 0;
 
-              Text(
-                "ডাক্তার : ${widget.doctor['name']}",
-                style: app_textstyles.body.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+          /// STATUS
+          if (currentTime < start && start != 0) {
+            statusMessage = "ডাক্তার এখনও আসেনি";
+          } else if (currentTime > end && end != 0) {
+            statusMessage = "এই শিফট শেষ হয়েছে";
+            waitingTime = 0;
+          } else {
+            statusMessage = "";
+          }
+
+          if (start != 0 && currentTime < start) {
+            delay = start - currentTime;
+          }
+
+          /// CALCULATION
+          yourSerial = int.tryParse(widget.serial) ?? 0;
+          beforeYou = yourSerial - current;
+          if (beforeYou < 0) beforeYou = 0;
+
+          waitingTime = (beforeYou * avgTime) + delay;
+
+          return Padding(
+            padding: const EdgeInsets.all(20),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.card_primary.withOpacity(0.8),
+                    AppColors.card_primary.withOpacity(0.2),
+                  ],
                 ),
               ),
 
-              const SizedBox(height: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
 
-              Text("বিভাগ : ${widget.doctor['dept']}"),
+                  Text(
+                    "ডাক্তার : ${widget.doctor['name']}",
+                    style: app_textstyles.body.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
-              const SizedBox(height: 10),
+                  if (statusMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 10),
+                      child: Text(
+                        statusMessage,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
 
-              Text("এখন চলছে : $nowServing"),
+                  const SizedBox(height: 10),
 
-              const SizedBox(height: 10),
+                  Text("বিভাগ : ${widget.doctor['dept']}"),
+                  const SizedBox(height: 10),
 
-              Text("আপনার সিরিয়াল : $yourSerial"),
+                  Text("এখন চলছে : $current"),
+                  const SizedBox(height: 10),
 
-              const SizedBox(height: 10),
+                  Text("আপনার সিরিয়াল : $yourSerial"),
+                  const SizedBox(height: 10),
 
-              Text("আপনার আগে : $beforeYou"),
+                  Text("আপনার আগে : $beforeYou"),
+                  const SizedBox(height: 10),
 
-              const SizedBox(height: 10),
-
-              Text(
-                "আনুমানিক অপেক্ষা : $waitingTime মিনিট",
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                  Text(
+                    "আনুমানিক অপেক্ষা : $waitingTime মিনিট",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-            ],
-          ),
-
-        ),
+            ),
+          );
+        },
       ),
     );
   }

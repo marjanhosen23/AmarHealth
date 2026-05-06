@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hospital_app/theme/app_colors.dart';
 import 'package:hospital_app/theme/app_textstyles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AdminSignup extends StatefulWidget {
   const AdminSignup({super.key});
@@ -300,56 +301,54 @@ class _AdminSignupState extends State<AdminSignup> {
 
   void _signup() async {
     final hospitalName = hospitalController.text.trim();
-    final email = emailController.text.trim();
+    final emailInput = emailController.text.trim();
     final mobile = mobileController.text.trim();
     final pin = pinController.text.trim();
     final confirmPin = confirmPinController.text.trim();
 
+    // 🔥 generated email (login এর সাথে match করবে)
+    final email = "${hospitalName.toLowerCase().replaceAll(' ', '')}@app.com";
+
     if (hospitalName.isEmpty ||
-        email.isEmpty ||
+        emailInput.isEmpty ||
         mobile.isEmpty ||
         pin.isEmpty ||
         confirmPin.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('All fields are required')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('All fields are required')));
       return;
     }
 
-    if (!isValidEmail(email)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Invalid email format')));
+    if (!isValidEmail(emailInput)) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Invalid email format')));
       return;
     }
 
     if (!isValidMobile(mobile)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Invalid mobile number')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Invalid mobile number')));
       return;
     }
 
     if (!isValidPin(pin)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Weak PIN')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Weak PIN')));
       return;
     }
 
     if (pin != confirmPin) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('PIN not matched')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('PIN not matched')));
       return;
     }
 
     setState(() => isLoading = true);
 
-    final hospitalKey = hospitalName.trim().toLowerCase();
+    final hospitalKey = hospitalName.toLowerCase();
 
     try {
-      /// CHECK duplicate from Firebase
+      /// 🔥 1. duplicate check (unchanged)
       final doc = await FirebaseFirestore.instance
           .collection('hospitals')
           .doc(hospitalKey)
@@ -363,26 +362,34 @@ class _AdminSignupState extends State<AdminSignup> {
         return;
       }
 
-      /// SAVE to Firebase
+      /// 🔥 2. FirebaseAuth account create (NEW)
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: pin,
+      );
+
+      /// 🔥 3. Firestore save (unchanged)
       await FirebaseFirestore.instance
           .collection('hospitals')
           .doc(hospitalKey)
           .set({
-            "name": hospitalName,
-            "email": email,
-            "mobile": mobile,
-            "pin": pin,
-          });
+        "name": hospitalName,
+        "email": emailInput,
+        "mobile": mobile,
+        "pin": pin,
+      });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Signup successful')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Signup successful')));
 
       Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Signup failed')),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     }
 
     setState(() => isLoading = false);
